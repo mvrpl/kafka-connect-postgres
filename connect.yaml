@@ -1,0 +1,40 @@
+input:
+  kafka_franz:
+    seed_brokers:
+      - "${KAFKA_SEED_BROKERS}"
+    topics:
+      - "cripto_prices"
+    consumer_group: "redpanda_connect_postgres_group"
+    sasl:
+      - mechanism: SCRAM-SHA-256
+        username: "${KAFKA_USER}"
+        password: "${KAFKA_PASSWORD}"
+    tls:
+      enabled: true
+      root_cas_file: "ca.pem"
+
+pipeline:
+  processors:
+    - mapping: |
+        root.symbol = this.symbol
+        root.price = this.openPrice
+        root.price_at = (this.closeTime / 1000.0).ts_format("2006-01-02T15:04:05.000Z07:00", "UTC")
+
+output:
+  sql_insert:
+    driver: "postgres"
+    dsn: "postgres://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=require"
+    table: "cripto_prices"
+    columns:
+      - "symbol"
+      - "price"
+      - "price_at"
+    args_mapping: |
+      root = [
+        this.symbol,
+        this.price,
+        this.price_at
+      ]
+    batching:
+      count: 100
+      period: 5s
