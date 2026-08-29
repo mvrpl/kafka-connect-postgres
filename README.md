@@ -44,6 +44,58 @@ Variáveis utilizadas:
 
 O tópico Kafka esperado é `cripto_prices`. A tabela PostgreSQL esperada é `cripto_prices`, com as colunas `symbol`, `price` e `price_at`.
 
+### Exemplo de tabela no PostgreSQL
+
+Com `DB_NAME=cripto`, você pode criar a tabela assim:
+
+```sql
+CREATE TABLE IF NOT EXISTS public.cripto_prices (
+    symbol text NOT NULL,
+    price numeric(18,8) NOT NULL,
+    price_at timestamptz NOT NULL
+);
+```
+
+> O Redpanda Connect mapeia os campos do evento Kafka para `symbol`, `price` e `price_at`, em conformidade com a tabela acima.
+
+### Exemplo de evento JSON no tópico Kafka
+
+O produtor publica um payload em formato JSON semelhante a este, vindo da API da Binance:
+
+```json
+{
+  "symbol": "XRPBRL",
+  "priceChange": "0.012345",
+  "priceChangePercent": "0.987",
+  "weightedAvgPrice": "1.685432",
+  "prevClosePrice": "1.670000",
+  "lastPrice": "1.682500",
+  "lastQty": "12.000000",
+  "bidPrice": "1.682100",
+  "askPrice": "1.682600",
+  "openPrice": "1.670000",
+  "highPrice": "1.690000",
+  "lowPrice": "1.660000",
+  "volume": "123456.789000",
+  "quoteVolume": "208000.000000",
+  "openTime": 1720000000000,
+  "closeTime": 1720003600000,
+  "firstId": 123456,
+  "lastId": 123789,
+  "count": 334
+}
+```
+
+O pipeline do Redpanda Connect converte esse evento para um INSERT na tabela `cripto_prices`, produzindo algo como:
+
+```json
+{
+  "symbol": "XRPBRL",
+  "price": "1.670000",
+  "price_at": "2024-07-05T12:00:00.000Z"
+}
+```
+
 ## Instalação
 
 As instruções e os pacotes abaixo seguem estes repositórios:
