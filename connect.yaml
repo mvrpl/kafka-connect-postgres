@@ -18,7 +18,7 @@ pipeline:
     - mapping: |
         root.symbol = this.symbol
         root.price = this.openPrice
-        root.price_at = (this.closeTime / 1000.0).ts_format("2006-01-02T15:04:05.000Z07:00", "UTC")
+        root.price_at = (this.closeTime / 1000.0).ts_format("2006-01-02T15:04:05.000Z07:00", "America/Sao_Paulo")
 
 output:
   sql_insert:
